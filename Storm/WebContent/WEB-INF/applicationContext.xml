@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans 
+    xmlns="http://www.springframework.org/schema/beans" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:p="http://www.springframework.org/schema/p" 
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:jaxws="http://cxf.apache.org/jaxws"
+	xmlns:cxf="http://cxf.apache.org/core"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans 
+    http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+    http://www.springframework.org/schema/context 
+    http://www.springframework.org/schema/context/spring-context-2.5.xsd
+    http://www.springframework.org/schema/aop 
+    http://www.springframework.org/schema/aop/spring-aop-2.5.xsd
+	http://www.springframework.org/schema/tx 
+	http://www.springframework.org/schema/tx/spring-tx-2.5.xsd
+	http://cxf.apache.org/jaxws
+	http://cxf.apache.org/schemas/jaxws.xsd
+	http://cxf.apache.org/core
+	http://cxf.apache.org/schemas/core.xsd">
+	
+	<import resource="classpath:META-INF/cxf/cxf.xml" />
+	<import resource="classpath:META-INF/cxf/cxf-extension-soap.xml" />
+	<import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
+	
+	<context:annotation-config/> 
+    <context:component-scan base-package="storm.*"/> 
+    <aop:aspectj-autoproxy/>
+    
+    <tx:annotation-driven transaction-manager="transactionManager" />
+
+    <bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean"> 
+        <property name="persistenceUnitName" value="FRAMEWORK_JPA" /> 
+        <property name="persistenceXmlLocation" value="classpath:META-INF/persistence.xml"></property> 
+    </bean> 
+    <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager"> 
+        <property name="entityManagerFactory" ref="entityManagerFactory" /> 
+    </bean> 
+    
+    <jaxws:endpoint 
+	    id="helloWorld" 
+	    implementor="#helloWorldImpl" 
+	    address="/HelloWorld" />
+	    
+    <jaxws:endpoint 
+	    id="loginService" 
+	    implementor="#loginServiceImpl" 
+	    address="/LoginService" />
+	    
+    <jaxws:endpoint 
+	    id="dataSyncService" 
+	    implementor="#dataSyncServiceImpl" 
+	    address="/DataSyncService" />
+
+	<!-- Service访问拦截器 In -->
+	<bean id="accessInInterceptor" 
+	      class="storm.impl.interceptor.AccessInInterceptor" />
+	      
+	<!-- Session超时访问拦截器 In -->
+	<bean id="sessionTimeoutCheckInterceptor" 
+	      class="storm.impl.interceptor.SessionTimeoutCheckInterceptor" />
+
+	<!-- 全局Bus(输入拦截器) -->
+	<cxf:bus>
+		<cxf:inInterceptors>
+			<ref bean="accessInInterceptor" />
+			<ref bean="sessionTimeoutCheckInterceptor" />
+		</cxf:inInterceptors>
+	</cxf:bus>
+	
+    <bean id="sessionManager" class="storm.impl.utils.SessionManagerImpl" scope="session">
+        <aop:scoped-proxy/>
+	</bean>
+	    
+	
+
+</beans>
