@@ -7,6 +7,7 @@
     xmlns:aop="http://www.springframework.org/schema/aop"
 	xmlns:tx="http://www.springframework.org/schema/tx"
 	xmlns:jaxws="http://cxf.apache.org/jaxws"
+	xmlns:jaxrs="http://cxf.apache.org/jaxrs"
 	xmlns:cxf="http://cxf.apache.org/core"
     xsi:schemaLocation="http://www.springframework.org/schema/beans 
     http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
@@ -18,6 +19,8 @@
 	http://www.springframework.org/schema/tx/spring-tx-2.5.xsd
 	http://cxf.apache.org/jaxws
 	http://cxf.apache.org/schemas/jaxws.xsd
+	http://cxf.apache.org/jaxrs
+	http://cxf.apache.org/schemas/jaxrs.xsd
 	http://cxf.apache.org/core
 	http://cxf.apache.org/schemas/core.xsd">
 	
@@ -26,7 +29,7 @@
 	<import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
 	
 	<context:annotation-config/> 
-    <context:component-scan base-package="storm.*"/> 
+    <context:component-scan base-package="storm"/>
     <aop:aspectj-autoproxy/>
     
     <tx:annotation-driven transaction-manager="transactionManager" />
@@ -54,6 +57,12 @@
 	    implementor="#dataSyncServiceImpl" 
 	    address="/DataSyncService" />
 
+    <jaxrs:server id="imageService" address="/">
+        <jaxrs:serviceBeans>
+            <ref bean="imageServiceImpl" />
+        </jaxrs:serviceBeans>
+    </jaxrs:server>
+
 	<!-- Service访问拦截器 In -->
 	<bean id="accessInInterceptor" 
 	      class="storm.impl.interceptor.AccessInInterceptor" />
@@ -73,6 +82,8 @@
     <bean id="sessionManager" class="storm.impl.utils.SessionManagerImpl" scope="session">
         <aop:scoped-proxy/>
 	</bean>
+	
+	<bean id="imageServiceImpl" class="storm.impl.webservice.ImageServiceImpl" />
 	    
 	
 
